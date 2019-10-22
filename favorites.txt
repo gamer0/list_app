@@ -33,6 +33,8 @@ eureka
 breaking bad
 silicon valley
 billions
+insatiable
+veep
 
 movies
 spiderman into the spiderverse
@@ -52,7 +54,7 @@ the birdcage
 get smart
 no reservations
 just friends
-laundromat
+the laundromat
 the housebunny
 most wanted
 
