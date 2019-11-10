@@ -1,32 +1,70 @@
-#! /usr/python3
+#! /usr/bin/python3
 
 '''main app for adding lists and entries'''
 
 import sys
 import pickle
 
-  delete = lambda my_dict, category, *entries: my_dict[category] = [entry for entry in my_dict[category] if entry not in entries]
-  add = lambda my_dict, category, *entries: my_dict[category].extend(entries)
-  usage = lambda: instructions = 'usage: \npython cmd -option arguments\nexample: python3 listapp.py -a shows black_mirror'
-  view = lambda my_dict, *categories: for category in categories: {category: my_dict[category]}
-  view_all = lambda my_dict: my_dict
+
+with open('favorites_dictionary.txt','rb') as f:
+  favorites_dict = pickle.load(f) # deserializes file to dictionary object
+for key in favorites_dict.keys():
+  favorites_dict[key] =  sorted(favorites_dict[key])
+  if "" in favorites_dict[key]: favorites_dict[key].remove('')
+
+categories = tuple(sorted(favorites_dict.keys())) # tuple of categories
+options = ('-a','-d','-v', '-h') # tuple of actions that can be taken
+cli_params = tuple(sys.argv[1:])
+
+
+def delete(category, my_dict=favorites_dict):
+  my_dict[category[0]] = [entry for entry in my_dict[category[0]] if entry not in category[1:]]
+  return {category[0]:my_dict[category[0]]}
+
+def add(category, my_dict=favorites_dict):
+  if category[0] in categories:
+    my_dict[category[0]].extend(category[1:])
+  else:
+    my_dict[category[0]] = []
+    my_dict[category[0]].extend(category[1:])
+  return {category[0]:my_dict[category[0]]}
+
+def usage():
+  instructions = 'usage: \npython3 listapp.py -option -arguments\nexample: python3 listapp.py -a shows black_mirror \
+  \n-a add, -d delete, -v view'
+  return instructions
+
+def view(categories, my_dict=favorites_dict):
+  return {category:my_dict[category] for category in categories}
+
+def val_arg(args_list):
+  if len(args_list) == 0:
+    return True
+  if len(args_list) == 1:
+    return lambda: args_list[1]  == '-h'
+  if len(args_list) >= 2:
+    return lambda: args_list[1] in options
 
 def main():
-  with open('favorites_dictionary.txt','rb') as f:
-    favorites_dict = pickle.load(f) # deserializes file to dictionary object
-  categories = tuple(favorites_dict.keys()) # tuple of categories
-  options = ('-a','-d','-v') # tuple of actions that can be taken
-  cli_params = sys.argv[1:]
-  if len(sys.argv) == 1:
+  dispatch_table = {'-a':add,'-d':delete,'-v':view,'-h':usage}
+
+  assert val_arg(cli_params), 'somebody fucked up'
+
+  if len(cli_params) == 0:
+    print('A list of categories')
+    print(*categories, sep='\n')
+    print('\nuse -h option for help menu')
+  elif len(cli_params) == 1:
     print(usage())
   else:
-    assert cli_params[0] in options, 'somebody fucked up, try again'
-    if cmdline_parameters in options:
-      if cmdline_parameters[0] == '-a': add(favorites_dict, cmdline_parameters)
+    result = dispatch_table[cli_params[0]](cli_params[1:])
+    for key in result.keys():
+      print(key)
+      print(*result[key], sep='||')
 
-  # test suite
-  add_entry(favorites_dict, 'shows','the rising','the downing')
-
+  with open('favorites_dictionary.txt','wb') as f:
+    pickle.dump(favorites_dict, f) # serializes dictionary object
 
 if __name__ == '__main__':
   main()
+

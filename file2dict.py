@@ -21,7 +21,7 @@ def file2dict(file):
 
 def main():
   my_dict = file2dict('favorites.txt')
-  with open('favorites_dictionary.txt', 'ab') as f:
+  with open('favorites_dictionary.txt', 'wb') as f:
     pickle.dump(my_dict, f)
   print("dictionary object has been serialized")
 
